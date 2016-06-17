@@ -18,9 +18,6 @@ var globalNamespace = {};
 	};
 }(typeof exports === 'object' && exports || globalNamespace));
 
-var FFT = require("fft");
-
-
 //////////////////////////////////////////////////////////////////////////
 // Namespace (lol)
 var SHOW_DEBUG_PRINTS = true;
@@ -46,17 +43,12 @@ function AudioEngine( options ) {
 	this.audioEngine = audioEngineImpl.createAudioEngine( this.options );
 	this.options = this.audioEngine.getOptions();
 
-	this.audioStreamer;
-	
 	this.processingCallbacks = [];
 	this.uiUpdateCallbacks = [];
 	
 	this.outputBuffer = [];
 	this.tempBuffer = [];
 	this.processBuffer = [];
-
-	this.fft = new FFT.complex( this.audioEngine.getOptions().framesPerBuffer, false );
-	this.fftBuffer = [];
 	
 	var _this = this;
 
@@ -130,8 +122,7 @@ AudioEngine.prototype.getProcessAudio = function() {
 	var _this = this;
 
 	var options = this.audioEngine.getOptions(),
-		numChannels = options.inputChannels,
-		fftBuffer = this.fftBuffer;
+		numChannels = options.inputChannels;
 	
 	var processAudio = function( inputBuffer ) {	
 
@@ -148,11 +139,6 @@ AudioEngine.prototype.getProcessAudio = function() {
 		for( var iCallback = 0; iCallback < _this.processingCallbacks.length; ++iCallback ) {
 			processBuffer = _this.processingCallbacks[iCallback]( processBuffer );
 		} // end for each callback
-		
-		
-		if( typeof(_this.audioStreamer) != "undefined" ) {
-			_this.audioStreamer.streamAudio( processBuffer, _this.options.framesPerBuffer, numChannels );
-		}
 		
 		// Return our output audio to the sound card
 		return processBuffer;
@@ -176,13 +162,6 @@ AudioEngine.prototype.setOptions = function( options ) {
 	this.audioEngine.setOptions( options );
 	this.options = this.audioEngine.getOptions();
 } // end AudioEngine.setOptions()
-
-
-//////////////////////////////////////////////////////////////////////////
-// Add a processing callback 
-AudioEngine.prototype.createAudioHub = function( port ) {
-	this.audioStreamer = require("audio-streamer").createNewAudioStreamer( port );
-} // end AudioEngine.createAudiohub()
 
 
 //////////////////////////////////////////////////////////////////////////
