@@ -1,3 +1,21 @@
+# Fork Information
+
+The purpose of this fork is to strip away unused npm dependencies and 
+leave just the core PortAudio wrapper, for use with my other project
+[SKQW](https://github.com/michaelbromley/skqw).
+
+I added a method to the API:
+
+```javascript
+var engine = coreAudio.createNewAudioEngine();
+
+// set the frequency (in hertz) by which the engine runs
+// the processAudio method. Formerly this was 1000Hz, but
+// now it defaults to 60Hz.
+engine.setSampleRate( 100 );
+```
+
+
 Node Core Audio
 ==================
 

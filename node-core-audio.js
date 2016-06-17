@@ -42,6 +42,12 @@ function AudioEngine( options ) {
     this.options = options || defaultOptions;
 	this.audioEngine = audioEngineImpl.createAudioEngine( this.options );
 	this.options = this.audioEngine.getOptions();
+	/**
+	 * How frequently to run the processAudio function in milliseconds,
+	 * defaults to 60 hertz equivalent.
+	 * @type {number}
+     */
+	this.sampleRate = 1000 / 60;
 
 	this.processingCallbacks = [];
 	this.uiUpdateCallbacks = [];
@@ -112,7 +118,7 @@ function AudioEngine( options ) {
 				_this.uiUpdateCallbacks[iUpdate]();
 			}
 		}
-	}, 1 );
+	}, this.sampleRate );
 } // end AudioEngine()
 
 
@@ -147,6 +153,12 @@ AudioEngine.prototype.getProcessAudio = function() {
 	return processAudio;
 } // end AudioEngine.getProcessAudio()
 
+
+AudioEngine.prototype.setSampleRate = function(val) {
+	if (typeof val === 'number') {
+		this.sampleRate = 1000 / val;
+	}
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Get the engine's options 
