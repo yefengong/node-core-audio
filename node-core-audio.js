@@ -60,7 +60,7 @@ function AudioEngine( options ) {
 
 	function validateOutputBufferStructure( buffer ) {
 		if( buffer === undefined ) {
-			console.log( "Audio processing function didn't return an output buffer" );
+			// console.log( "Audio processing function didn't return an output buffer" );
 			return false;
 		}
 		
