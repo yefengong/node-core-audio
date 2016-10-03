@@ -103,7 +103,7 @@ function AudioEngine( options ) {
 
 	this.processAudio = this.getProcessAudio();
 
-	setInterval( function() {
+	setTimeout( function takeSample() {
 		if (_this.audioEngine.isBufferEmpty()) {
 			// Try to process audio
 			var input = _this.audioEngine.read();
@@ -118,6 +118,7 @@ function AudioEngine( options ) {
 				_this.uiUpdateCallbacks[iUpdate]();
 			}
 		}
+		setTimeout(takeSample, _this.sampleRate);
 	}, this.sampleRate );
 } // end AudioEngine()
 
