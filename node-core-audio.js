@@ -38,7 +38,7 @@ function AudioEngine( options ) {
 		framesPerBuffer: 1024,
 		useMicrophone: true
 	};
-	
+
     this.options = options || defaultOptions;
 	this.audioEngine = audioEngineImpl.createAudioEngine( this.options );
 	this.options = this.audioEngine.getOptions();
@@ -48,14 +48,15 @@ function AudioEngine( options ) {
 	 * @type {number}
      */
 	this.sampleRate = 1000 / 60;
+	this.sampleTimer = 0;
 
 	this.processingCallbacks = [];
 	this.uiUpdateCallbacks = [];
-	
+
 	this.outputBuffer = [];
 	this.tempBuffer = [];
 	this.processBuffer = [];
-	
+
 	var _this = this;
 
 	function validateOutputBufferStructure( buffer ) {
@@ -63,7 +64,7 @@ function AudioEngine( options ) {
 			// console.log( "Audio processing function didn't return an output buffer" );
 			return false;
 		}
-		
+
 		if( !_this.audioEngine.getOptions().interleaved ) {
 
 			if( buffer.length > _this.options.inputChannels ) {
@@ -74,7 +75,7 @@ function AudioEngine( options ) {
 				return false;
 			}
 
-			if( typeof(buffer[0]) != "object" ) { 
+			if( typeof(buffer[0]) != "object" ) {
 				console.log( "Output buffer not setup correctly, buffer[0] isn't an array" );
 				return false;
 			}
@@ -97,13 +98,13 @@ function AudioEngine( options ) {
 	for( var iChannel = 0; iChannel<MAX_SUPPORTED_CHANNELS; ++iChannel ) {
 		this.processBuffer[iChannel] = [];
 	}
-	
-	// Start polling the audio engine for data as fast as we can	
+
+	// Start polling the audio engine for data as fast as we can
 	var _this = this;
 
 	this.processAudio = this.getProcessAudio();
 
-	setTimeout( function takeSample() {
+	this.takeSample = function _takeSample() {
 		if (_this.audioEngine.isBufferEmpty()) {
 			// Try to process audio
 			var input = _this.audioEngine.read();
@@ -112,14 +113,16 @@ function AudioEngine( options ) {
 
 			if( validateOutputBufferStructure(outputBuffer) )
 				_this.audioEngine.write( outputBuffer );
-			
+
 			// Call our UI updates now that all the DSP work has been done
 			for( var iUpdate=0; iUpdate < _this.uiUpdateCallbacks.length; ++iUpdate ) {
 				_this.uiUpdateCallbacks[iUpdate]();
 			}
+			_this.sampleTimer = setTimeout(_takeSample, _this.sampleRate);
 		}
-		setTimeout(takeSample, _this.sampleRate);
-	}, this.sampleRate );
+	};
+
+	this.takeSample();
 } // end AudioEngine()
 
 
@@ -130,15 +133,15 @@ AudioEngine.prototype.getProcessAudio = function() {
 
 	var options = this.audioEngine.getOptions(),
 		numChannels = options.inputChannels;
-	
-	var processAudio = function( inputBuffer ) {	
+
+	var processAudio = function( inputBuffer ) {
 
 		// If we don't have any processing callbacks, just get out
 		if( _this.processingCallbacks.length == 0 )
 			return inputBuffer;
-			
+
 		var processBuffer = inputBuffer;
-			
+
 		//if( !_this.options.interleaved )
 		//	deInterleave( inputBuffer, processBuffer, _this.options.framesPerBuffer, numChannels );
 
@@ -146,18 +149,20 @@ AudioEngine.prototype.getProcessAudio = function() {
 		for( var iCallback = 0; iCallback < _this.processingCallbacks.length; ++iCallback ) {
 			processBuffer = _this.processingCallbacks[iCallback]( processBuffer );
 		} // end for each callback
-		
+
 		// Return our output audio to the sound card
 		return processBuffer;
 	} // end processAudio()
-	
+
 	return processAudio;
 } // end AudioEngine.getProcessAudio()
 
 
 AudioEngine.prototype.setSampleRate = function(val) {
 	if (typeof val === 'number') {
+		clearTimeout(this.sampleTimer);
 		this.sampleRate = 1000 / val;
+		this.takeSample();
 	}
 }
 
