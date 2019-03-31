@@ -19,6 +19,10 @@
 	#include <string.h>
 #endif
 
+#ifdef __APPLE__
+	#include <unistd.h>
+#endif
+
 using namespace v8; using namespace std;
 
 Persistent<Function> Audio::AudioEngine::constructor;
@@ -459,6 +463,7 @@ void Audio::AudioEngine::NewInstance(const Nan::FunctionCallbackInfo<v8::Value>&
 	//HandleScope scope;
 
 	unsigned argc = info.Length();
+	Isolate* isolate = info.GetIsolate();
 
 	if( argc > 2 )
 		argc = 2;
@@ -469,9 +474,9 @@ void Audio::AudioEngine::NewInstance(const Nan::FunctionCallbackInfo<v8::Value>&
 	if( argc > 1 )
 		argv[1] = info[1];
 
-	//Local<Object> instance = constructor->NewInstance( argc, argv );
-	Local<Object> instance = Nan::New(constructor)->NewInstance(argc, argv);
-	//Local<Object> instance = constructor->NewInstance(argc, argv);
+    // yefeng
+    Local<Context> context = isolate->GetCurrentContext();
+	Local<Object> instance = Nan::New(constructor)->NewInstance(context, argc, argv).ToLocalChecked();
 
 	info.GetReturnValue().Set( instance );
 } // end AudioEngine::NewInstance()

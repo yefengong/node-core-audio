@@ -8,12 +8,13 @@
     "Daniel Church <CrazyNorman@gmail.com> (https://github.com/anprogrammer/)"
   ],
   "dependencies": {
-    "nan": "^2.1.0"
+    "nan": "^2.13.1"
   },
   "description": "Core native node.js audio functionality, including sound card access and audio streaming",
   "main": "./node-core-audio",
   "scripts": {
-    "test": "node test/test.js"
+    "test": "node test/test.js",
+    "rebuild": "node-gyp rebuild"
   },
   "engines": {
     "node": ">=0.12.0"
